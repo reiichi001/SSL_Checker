@@ -19,47 +19,65 @@ namespace SSL_Checker
 
         private static async Task ProcessRepositories()
         {
-
-
-
             client.DefaultRequestHeaders.CacheControl = new CacheControlHeaderValue
             {
                 NoCache = true,
             };
 
-            Console.WriteLine("Trying with only TLSv1.2");
-            Console.WriteLine("-----");
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-            var stringTask = await client.GetStringAsync("https://kamori.goats.dev/Plugin/CoreChangelog");
+            try
+            {
+                Console.WriteLine("Trying with system defaults");
+                Console.WriteLine("-----");
+                ServicePointManager.SecurityProtocol = SecurityProtocolType.SystemDefault;
+                var stringTask = await client.GetStringAsync("https://kamori.goats.dev/Plugin/CoreChangelog");
 
-            // var msg = stringTask;
-            dynamic  msg = JsonConvert.DeserializeObject(stringTask);
+                dynamic msg = JsonConvert.DeserializeObject(stringTask);
+                Console.WriteLine(msg[0].version);
+                Console.WriteLine("-----");
+                Console.WriteLine();
+            }
+            catch
+            {
+                Console.WriteLine("system defaults failed.");
+            }
+
+            try
+            {
+                Console.WriteLine("Trying with the same defaults as Dalamud (TLSv1.0-1.2");
+                Console.WriteLine("-----");
+                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12 | SecurityProtocolType.Tls;
+                var stringTask = await client.GetStringAsync("https://kamori.goats.dev/Plugin/CoreChangelog");
+
+                dynamic msg = JsonConvert.DeserializeObject(stringTask);
+                Console.WriteLine(msg[0].version);
+                Console.WriteLine("-----");
+                Console.WriteLine();
+            }
+            catch
+            {
+                Console.WriteLine("TLSv1.0-1.2 failed.");
+            }
+
+            try
+            {
+                Console.WriteLine("Trying with only TLSv1.2");
+                Console.WriteLine("-----");
+                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+                var stringTask = await client.GetStringAsync("https://kamori.goats.dev/Plugin/CoreChangelog");
+
+                // var msg = stringTask;
+                dynamic msg = JsonConvert.DeserializeObject(stringTask);
+
+
+                Console.WriteLine(msg[0].version);
+                Console.WriteLine("-----");
+                Console.WriteLine();
+            }
+            catch
+            {
+                Console.WriteLine("TLSv1.2 only failed.");
+            }
             
-
-            Console.WriteLine(msg[0].version);
-            Console.WriteLine("-----");
-            Console.WriteLine();
-            
-            Console.WriteLine("Trying with the same defaults as Dalamud (TLSv1.0-1.2");
-            Console.WriteLine("-----");
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12 | SecurityProtocolType.Tls;
-            stringTask = await client.GetStringAsync("https://kamori.goats.dev/Plugin/CoreChangelog");
-
-            msg = JsonConvert.DeserializeObject(stringTask);
-            Console.WriteLine(msg[0].version);
-            Console.WriteLine("-----");
-            Console.WriteLine();
-
-            Console.WriteLine("Trying with system defaults");
-            Console.WriteLine("-----");
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.SystemDefault;
-            stringTask = await client.GetStringAsync("https://kamori.goats.dev/Plugin/CoreChangelog");
-
-            msg = JsonConvert.DeserializeObject(stringTask);
-            Console.WriteLine(msg[0].version);
-            Console.WriteLine("-----");
-            Console.WriteLine();
-
             Console.Write("Press the return key to exit.");
             Console.Read();
         }
